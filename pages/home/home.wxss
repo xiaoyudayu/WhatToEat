@@ -1,0 +1,16 @@
+/* 首页：样式主体在 app.wxss，这里只放本页特有项 */
+
+/* 开奖中：按钮换浅白灰（呼吸保留，阴影同步换成中性暖灰） */
+.btn-main.is-rolling {
+  filter: none;
+  background: linear-gradient(160deg, #FCFAF6, #E9E1D6);
+  color: #8A7666;
+  box-shadow: 0 20rpx 44rpx -14rpx rgba(69, 48, 31, .16);
+  animation: home-breathe 1.2s ease-in-out infinite;
+}
+@keyframes home-breathe {
+  0%, 100% { box-shadow: 0 20rpx 44rpx -14rpx rgba(69, 48, 31, .16); }
+  50%      { box-shadow: 0 24rpx 62rpx -8rpx  rgba(69, 48, 31, .32); }
+}
+/* 浅灰底上的白爪看不见：反色成墨色并压淡 */
+.btn-main.is-rolling .paw-ico { filter: invert(1); opacity: .55; }

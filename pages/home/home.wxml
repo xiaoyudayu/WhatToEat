@@ -1,0 +1,66 @@
+<import src="/templates/guide.wxml" />
+
+<view class="page-root">
+  <!-- 开屏：静态欢迎图，停留后直接移除（样式见 app.wxss .splash） -->
+  <view class="splash" wx:if="{{splashVisible}}">
+    <image class="splash__img" src="/assets/images/ip/splash-welcome.png" mode="aspectFill"></image>
+  </view>
+
+  <view class="status-holder" style="height:{{statusBarHeight}}px"></view>
+
+  <scroll-view class="page-scroll" scroll-y>
+    <view class="home-screen">
+      <!-- 2.1 模式切换 -->
+      <view class="seg" id="home-seg">
+        <view class="seg__item {{mode === 'mine' ? 'is-on' : ''}}" data-mode="mine" bindtap="onMode">自己做</view>
+        <view class="seg__item {{mode === 'nearby' ? 'is-on' : ''}}" data-mode="nearby" bindtap="onMode">出去吃</view>
+      </view>
+
+      <!-- 2.2 开奖池：手绘餐盘。待机/结果 = 纯静态；仅开奖时盘子旋转 -->
+      <view class="pool-zone">
+        <view class="pool {{g.poolGlow ? 'g-pool-glow' : ''}} {{phase === 'rolling' ? 'is-rolling' : ''}} {{g.liftPool ? 'g-lift' : ''}}"
+          id="pool" bindtap="onPoolTap">
+          <image class="pool__plate" src="/assets/images/ip/plate-pawprint.png" mode="aspectFit"></image>
+          <text class="pool__name {{phase === 'idle' ? 'is-brand' : ''}} {{dishName.length <= 3 ? 'is-xl' : dishName.length <= 4 ? 'is-lg' : dishName.length <= 5 ? 'is-md' : dishName.length <= 7 ? 'is-sm' : 'is-xs'}}">{{dishName}}</text>
+        </view>
+      </view>
+
+      <!-- 2.3 开始 / 停止 + 2.4 记录 -->
+      <view class="home-actions">
+        <view id="btn-draw"
+          class="btn-main {{phase === 'rolling' ? 'is-rolling' : ''}} {{phase === 'result' ? 'is-dim' : ''}} {{g.liftDraw ? 'g-lift--btn' : ''}} {{g.glowDraw ? 'g-glow' : ''}}"
+          bindtap="onToggle">
+          <image class="paw-ico" src="/assets/images/ip/icon-paw-white.png" mode="aspectFit"></image>
+          <text class="btn-main__txt">{{phase === 'rolling' ? '结束' : (phase === 'result' ? '再来一次' : '开始')}}</text>
+        </view>
+        <view id="btn-record"
+          class="btn-ghost {{phase === 'result' ? 'is-result' : ''}} {{g.liftRec ? 'g-lift--btn' : ''}} {{g.glowRec ? 'g-glow' : ''}}"
+          bindtap="onRecord">{{recLabel}}</view>
+      </view>
+
+      <view class="pad-bottom"></view>
+    </view>
+  </scroll-view>
+
+  <!-- IP 萌宠对话入口：仅首页显示（热区只在小猫与 Lv 泡上，不挡按钮）。
+       三层结构：说话气泡（浮层，不占流）→ 常驻等级泡（点击进喵屋）→ 小猫 -->
+  <view class="ip-pet" wx:if="{{petVisible}}">
+    <view class="ip-pet__bubble {{petBubble ? '' : 'is-out'}}">{{petBubbleText}}</view>
+    <view class="ip-pet__lv" wx:if="{{pet}}" bindtap="goPet">
+      <text class="ip-pet__lv-num">Lv.{{pet.lv}}</text>
+      <text class="ip-pet__lv-title">{{pet.title}}</text>
+    </view>
+    <view class="ip-pet__wrap">
+      <image class="ip-pet__img" src="/assets/images/ip/pet-cat-body.png" mode="aspectFit"></image>
+      <view class="ip-pet__head">
+        <image class="ip-pet__img" src="/assets/images/ip/pet-cat-head.png" mode="aspectFit"></image>
+        <image class="ip-pet__eyes" src="/assets/images/ip/pet-cat-eyes.png" mode="aspectFit"></image>
+      </view>
+      <!-- 点击层：按素材不透明边界（左右 13%/12%，上下 3%/0）收窄到猫身上 -->
+      <view class="ip-pet__hit" bindtap="onPetTap"></view>
+    </view>
+  </view>
+
+  <tab-bar active="home" lift="{{g.liftTab}}"></tab-bar>
+  <template is="guide-layer" data="{{...g}}"></template>
+</view>

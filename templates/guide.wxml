@@ -1,0 +1,34 @@
+<!-- 引导层模板：7 步共用一套元素，由各页面把算好的位置塞进 data.g -->
+<template name="guide-layer">
+  <block wx:if="{{step}}">
+    <view class="g-mask {{maskSoft ? 'is-soft' : ''}}" bindtap="onGuideMaskTap"></view>
+
+    <view class="g-toast {{toastGone ? 'is-gone' : ''}}" wx:if="{{toast}}" style="{{toastStyle}}">{{toast}}</view>
+
+    <view class="g-halo" wx:if="{{halo}}" style="{{haloStyle}}"></view>
+    <view class="g-block" wx:if="{{block}}" style="{{blockStyle}}"></view>
+
+    <view class="g-arrow" wx:if="{{arrow}}" style="{{arrowStyle}}">
+      <view class="g-arrow__up"></view>
+      <view class="g-arrow__shaft"></view>
+      <view class="g-arrow__down"></view>
+    </view>
+
+    <view class="g-ring {{ringBlock ? 'g-ring--block' : ''}}" wx:if="{{ring}}" style="{{ringStyle}}"></view>
+
+    <view class="g-rip" wx:if="{{rip}}" style="{{ripStyle}}"></view>
+    <view class="g-rip g-rip--two" wx:if="{{rip}}" style="{{ripStyle}}"></view>
+
+    <view class="g-hand {{hand ? 'g-hand--' + hand : ''}}" wx:if="{{hand}}" style="{{handStyle}}">
+      <image class="g-hand__img" src="/assets/icons/hand.svg" mode="scaleToFill"></image>
+    </view>
+
+    <view class="g-hint {{hintBig ? 'g-hint--big' : ''}}" wx:if="{{hint}}" style="{{hintStyle}}"
+      bindtap="onGuideHintTap">
+      <text>{{hint}}</text>
+      <view class="g-inbtn" wx:if="{{hintBtn}}" catchtap="onGuideHintBtn">{{hintBtn}}</view>
+    </view>
+
+    <view class="g-skip" wx:if="{{skip}}" style="top:{{skipTop}}px" bindtap="onGuideSkip">跳过</view>
+  </block>
+</template>

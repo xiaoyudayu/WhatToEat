@@ -1,0 +1,421 @@
+/* 喵屋：猫架等级页 v2（本页全部样式就地维护，不放 app.wxss） */
+
+.pet-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ---------------- 顶栏 ---------------- */
+.pet-nav {
+  display: flex;
+  align-items: center;
+  padding: 12rpx 32rpx 4rpx;
+}
+.pet-nav__back {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  background: #fff;
+  border: 2rpx solid var(--c-line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pet-nav__arrow {
+  width: 18rpx;
+  height: 18rpx;
+  border-left: 4rpx solid var(--c-ink-2);
+  border-bottom: 4rpx solid var(--c-ink-2);
+  transform: rotate(45deg);
+  margin-left: 6rpx;
+}
+.pet-nav__title {
+  flex: 1;
+  text-align: center;
+  font-family: "ZCOOL KuaiLe", "PingFang SC", sans-serif;
+  font-size: 36rpx;
+  color: var(--c-ink);
+  letter-spacing: 6rpx;
+}
+.pet-nav__spacer { width: 64rpx; height: 64rpx; }   /* 与返回钮等宽，保证标题居中 */
+
+/* ---------------- 摘要卡（紧凑版） ---------------- */
+.pet-head {
+  margin: 12rpx 28rpx 4rpx;
+  background: #fff;
+  border: 2rpx solid var(--c-line);
+  border-radius: 26rpx;
+  padding: 20rpx 24rpx;
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  box-shadow: 0 16rpx 40rpx -20rpx rgba(69, 48, 31, .18);
+}
+.pet-head__badge { position: relative; width: 96rpx; height: 96rpx; flex-shrink: 0; }
+.pet-head__badge-img { width: 96rpx; height: 96rpx; }
+.pet-head__lv {
+  position: absolute;
+  left: 0; right: 0; top: 0; bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 6rpx;
+  font-family: "ZCOOL KuaiLe", "PingFang SC", sans-serif;
+  font-size: 36rpx;
+  color: var(--c-primary);
+}
+.pet-head__col { flex: 1; min-width: 0; }
+.pet-head__row1 { display: flex; align-items: baseline; justify-content: space-between; }
+.pet-head__title {
+  font-family: "ZCOOL KuaiLe", "PingFang SC", sans-serif;
+  font-size: 32rpx;
+  color: var(--c-ink);
+}
+.pet-head__exp { font-size: 22rpx; color: var(--c-ink-2); }
+.pet-head__bar {
+  margin-top: 12rpx;
+  height: 16rpx;
+  border-radius: 9rpx;
+  background: var(--c-track, #F0E2CE);
+  overflow: hidden;
+}
+.pet-head__fill {
+  height: 100%;
+  border-radius: 9rpx;
+  background: linear-gradient(90deg, #F6B57A, #E2622F);
+  transition: width .5s ease;
+}
+.pet-head__hint { margin-top: 10rpx; font-size: 21rpx; color: var(--c-ink-3); }
+
+/* ---------------- 猫架（左右各占半区，右侧不再出界） ----------------
+   全部定位由 pet.js 的 STOPS 坐标表换算成 px 内联注入，这里只给外观 */
+.pet-tree {
+  flex: 1;
+  min-height: 0;
+  margin: 4rpx 0 0;
+}
+.tree { position: relative; }
+
+/* 细立柱：18rpx，绳纹平铺 */
+.tree__post {
+  position: absolute;
+  border-radius: 12rpx;
+  background: repeating-linear-gradient(-38deg,
+    #D9A96C 0 7rpx, #C9955A 7rpx 14rpx);
+  box-shadow: inset 0 0 0 2rpx rgba(120, 82, 45, .35);
+}
+/* 地面 */
+.tree__ground {
+  position: absolute;
+  height: 16rpx;
+  border-radius: 8rpx;
+  background: #E8CFA8;
+  box-shadow: inset 0 0 0 2rpx rgba(120, 82, 45, .22);
+}
+/* 横枝（木板下）/ 横梁（吊床上）——v2.7 加粗 5→7rpx */
+.tree__branch {
+  position: absolute;
+  height: 7rpx;
+  border-radius: 4rpx;
+  background: #C9955A;
+}
+/* 平台图 */
+.tree__plat { position: absolute; z-index: 3; }
+.tree__plat--nest { z-index: 4; filter: drop-shadow(0 10rpx 18rpx rgba(69, 48, 31, .14)); }
+.tree__plat--lock { opacity: .55; filter: grayscale(.35); }
+.tree__plat--cur { filter: drop-shadow(0 12rpx 22rpx rgba(226, 98, 47, .28)); }
+
+/* 层名牌：平台对侧，垂直居中于落点 */
+.tree__plate {
+  position: absolute;
+  z-index: 4;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 2rpx solid var(--c-line);
+  border-radius: 16rpx;
+  padding: 10rpx 16rpx;
+  min-width: 148rpx;
+  box-sizing: border-box;
+}
+.tree__plate--cur {
+  border-color: var(--c-primary);
+  box-shadow: 0 12rpx 26rpx -12rpx rgba(226, 98, 47, .4);
+}
+.tree__plate--lock { opacity: .6; }
+.tree__lv {
+  font-family: "ZCOOL KuaiLe", "PingFang SC", sans-serif;
+  font-size: 22rpx;
+  color: var(--c-primary);
+}
+.tree__title {
+  font-family: "ZCOOL KuaiLe", "PingFang SC", sans-serif;
+  font-size: 26rpx;
+  color: var(--c-ink);
+  margin-top: 2rpx;
+}
+.tree__note { font-size: 18rpx; color: var(--c-ink-3); margin-top: 3rpx; }
+
+/* ---------------- 挂饰（枝端毛球带挂绳 / 柱侧铃铛带横钉） ---------------- */
+.deco { position: absolute; z-index: 2; }
+.deco-yarn__string { width: 3rpx; height: 10rpx; background: #8A7666; margin: 0 auto; }
+.deco-yarn__ball { width: 100%; height: calc(100% - 10rpx); }
+.deco-sway {
+  transform-origin: 50% 0;
+  animation: deco-sway 2.8s ease-in-out infinite;
+}
+/* 新解锁入场：pop 盖过轻摆（列在后面，前 0.55s 生效，结束后交还轻摆） */
+.deco-new {
+  animation: deco-sway 2.8s ease-in-out infinite, deco-pop .55s cubic-bezier(.3, 1.6, .5, 1);
+}
+@keyframes deco-pop {
+  0% { transform: scale(0); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes deco-sway {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+.deco-bell__peg {
+  position: absolute;
+  right: -6rpx;
+  top: 0;
+  width: 12rpx;
+  height: 3rpx;
+  border-radius: 2rpx;
+  background: #C9955A;
+}
+.deco-bell__string { width: 3rpx; height: 8rpx; background: #8A7666; margin: 0 auto; }
+.deco-bell__ball {
+  width: 24rpx;
+  height: 24rpx;
+  border-radius: 50%;
+  background: #F5C518;
+  border: 2rpx solid #BA7517;
+  box-sizing: border-box;
+}
+
+/* ---------------- 小猫：三层结构 ----------------
+   cat-pos 直线位移（transition transform）
+   cat-face 翻面（translate 定锚 + scaleX 朝向，落地转向走这里）
+   cat-hop 空中弧线 + 向上倾 + 轻微摆动 + 落地压扁 */
+.cat-pos {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  z-index: 6;
+  transition: transform .6s cubic-bezier(.3, .75, .4, 1);
+}
+.cat-face {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 160rpx;
+  height: 104rpx;
+  transform: translate(-50%, -100%);
+  transition: transform .2s ease;
+}
+.cat-face--left { transform: translate(-50%, -100%) scaleX(-1); }
+.cat-hop { width: 100%; height: 100%; transform-origin: 50% 100%; }
+
+/* 起跳前下蹲蓄力（压扁加宽一点，蹬地感更强） */
+.cat-pos.is-from-prev .cat-hop { animation: cat-crouch .5s ease-out both; }
+@keyframes cat-crouch {
+  0%, 100% { transform: translateY(0); }
+  40% { transform: translateY(10rpx) scale(1.04, .93); }
+}
+
+/* 空中（v2.3）：素材换成趴平伸展姿（身体已水平），空中只做小幅上仰——
+   起跳蹬伸微抬 → 顶点 -20° 带出向上趋势 → 回正落地压扁。
+   翻面（scaleX(-1)）自动镜像，左右方向共用同一套关键帧。 */
+.cat-pos.is-jumping .cat-hop--to-right,
+.cat-pos.is-jumping .cat-hop--to-left { animation: hop-up .6s cubic-bezier(.45, .05, .55, .95) both; }
+@keyframes hop-up {
+  0%   { transform: translateY(0) rotate(0deg); }
+  10%  { transform: translateY(-8rpx) rotate(-8deg) scale(.97, 1.06); }
+  32%  { transform: translateY(-98rpx) rotate(-14deg); }
+  48%  { transform: translateY(-150rpx) rotate(-20deg) scale(.99, 1.01); }
+  64%  { transform: translateY(-138rpx) rotate(-12deg); }
+  86%  { transform: translateY(0) rotate(-3deg) scale(1.06, .9); }
+  100% { transform: translateY(0) rotate(0deg); }
+}
+
+/* 落地扬尘：随跳跃动画延时触发（约在落地帧），左右各一粒，t 值对齐 .6s 跳跃总时长 */
+.cat-dust {
+  position: absolute;
+  left: 50%;
+  bottom: -8rpx;
+  width: 18rpx;
+  height: 14rpx;
+  border-radius: 50%;
+  background: rgba(187, 168, 150, .55);
+  opacity: 0;
+}
+.cat-dust--a { margin-left: -32rpx; }
+.cat-dust--b { margin-left: 14rpx; }
+.cat-pos.is-jumping .cat-dust--a { animation: dust-pop-l .32s ease-out .48s both; }
+.cat-pos.is-jumping .cat-dust--b { animation: dust-pop-r .28s ease-out .5s both; }
+@keyframes dust-pop-l {
+  0% { opacity: .75; transform: translate(0, 0) scale(.4); }
+  100% { opacity: 0; transform: translate(-30rpx, -10rpx) scale(1.5); }
+}
+@keyframes dust-pop-r {
+  0% { opacity: .7; transform: translate(0, 0) scale(.35); }
+  100% { opacity: 0; transform: translate(26rpx, -12rpx) scale(1.4); }
+}
+.cat-img {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 14rpx 20rpx rgba(69, 48, 31, .22));
+  transition: transform .25s ease;
+}
+/* 地面站姿倾角：压平俯冲素材的前倾，让前爪后爪同线（仅 Lv1 常态套用） */
+.cat-img--tilt { transform: rotate(10deg); }
+
+/* 点猫互动：小幅摇摆 + 露出开心（作用在 cat-hop，不与站姿倾角打架） */
+.cat-pos.is-tapped .cat-hop { animation: cat-wiggle .85s ease; }
+@keyframes cat-wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  20% { transform: rotate(5deg) scale(1.03, .97); }
+  45% { transform: rotate(-5deg); }
+  70% { transform: rotate(3deg) scale(.98, 1.02); }
+}
+
+/* 点猫冒出的猫语泡：贴在嘴边（素材头朝右 → 默认挂右侧），最多两行 */
+.cat-bubble {
+  position: absolute;
+  left: 56rpx;
+  bottom: 30rpx;
+  width: max-content;          /* 父容器 .cat-pos 宽为 0，必须显式撑开，否则挤成竖排 */
+  max-width: 260rpx;           /* 自适应到 260rpx，约 10 字/行，最多两行截断 */
+  background: #fff;
+  border: 2rpx solid var(--c-line);
+  border-radius: 4rpx 18rpx 18rpx 18rpx;
+  padding: 8rpx 16rpx;
+  font-size: 22rpx;
+  line-height: 1.4;
+  color: var(--c-ink);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  box-shadow: 0 10rpx 22rpx -12rpx rgba(69, 48, 31, .3);
+  z-index: 8;
+  animation: bubble-in .25s ease;
+}
+/* 朝左站时镜像到嘴的另一侧 */
+.cat-bubble--left {
+  left: auto;
+  right: 56rpx;
+  border-radius: 18rpx 4rpx 18rpx 18rpx;
+}
+@keyframes bubble-in { from { opacity: 0; transform: translateY(8rpx); } to { opacity: 1; transform: translateY(0); } }
+
+/* 点猫飘出的爱心 */
+.cat-heart {
+  position: absolute;
+  left: 12rpx;
+  bottom: 76rpx;
+  font-size: 30rpx;
+  color: #E2622F;
+  z-index: 8;
+  animation: heart-float .85s ease-out both;
+}
+.cat-heart--b { left: -36rpx; font-size: 22rpx; color: #F6B57A; animation-delay: .12s; }
+@keyframes heart-float {
+  0% { opacity: 0; transform: translateY(10rpx) scale(.6); }
+  25% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-90rpx) scale(1.1); }
+}
+
+/* ---------------- 规则 ---------------- */
+.pet-rules {
+  padding: 14rpx 40rpx calc(24rpx + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4rpx;
+}
+.pet-rules__line { font-size: 22rpx; color: var(--c-ink-2); }
+.pet-rules__sub { font-size: 20rpx; color: var(--c-ink-3); }
+
+/* ---------------- 升级弹层 ---------------- */
+.lvup {
+  position: fixed;
+  left: 0; top: 0; right: 0; bottom: 0;
+  background: rgba(61, 42, 30, .45);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: lvup-fade .3s ease;
+}
+@keyframes lvup-fade { from { opacity: 0; } to { opacity: 1; } }
+.lvup__card {
+  width: 560rpx;
+  background: #FAF3E9;
+  border-radius: 40rpx;
+  padding: 44rpx 40rpx 40rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: lvup-pop .42s cubic-bezier(.3, 1.4, .5, 1);
+}
+@keyframes lvup-pop { from { transform: scale(.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.lvup__medal-wrap { position: relative; margin-top: -120rpx; }
+.lvup__medal {
+  display: block;
+  width: 200rpx;
+  height: 190rpx;
+  filter: drop-shadow(0 16rpx 26rpx rgba(69, 48, 31, .25));
+}
+/* 徽章圆心嵌等级数字（只放数字，v2.4；v2.5 按圆面实测中心校准：
+   圆心相对 (0.505,0.519)，200x190 显示框里 y≈99rpx，数字 58rpx 行高 1 → top 70rpx） */
+.lvup__medal-lv {
+  position: absolute;
+  left: 0; right: 0;
+  top: 70rpx;
+  line-height: 1;
+  text-align: center;
+  font-family: "ZCOOL KuaiLe", "PingFang SC", sans-serif;
+  font-size: 58rpx;
+  color: #B9541F;
+}
+.lvup__tag {
+  margin-top: 10rpx;
+  font-family: "ZCOOL KuaiLe", "PingFang SC", sans-serif;
+  font-size: 30rpx;
+  color: #fff;
+  background: var(--c-primary);
+  border-radius: 24rpx;
+  padding: 8rpx 30rpx;
+  letter-spacing: 2rpx;
+}
+.lvup__cat-wrap { margin-top: 20rpx; width: 260rpx; height: 260rpx; animation: lvup-bounce 1.6s ease-in-out infinite; }
+@keyframes lvup-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12rpx); } }
+.lvup__cat { width: 100%; height: 100%; }
+.lvup__title {
+  margin-top: 18rpx;
+  font-family: "ZCOOL KuaiLe", "PingFang SC", sans-serif;
+  font-size: 34rpx;
+  color: var(--c-ink);
+}
+.lvup__btn {
+  margin-top: 30rpx;
+  width: 320rpx;
+  height: 84rpx;
+  border-radius: 42rpx;
+  background: linear-gradient(160deg, #F6B57A, #E2622F);
+  color: #fff;
+  font-family: "ZCOOL KuaiLe", "PingFang SC", sans-serif;
+  font-size: 30rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 18rpx 36rpx -14rpx rgba(226, 98, 47, .55);
+}

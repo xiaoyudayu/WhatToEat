@@ -1,0 +1,201 @@
+<import src="/templates/guide.wxml" />
+
+<view class="page-root">
+  <view class="status-holder" style="height:{{statusBarHeight}}px"></view>
+
+  <scroll-view class="page-scroll" scroll-y>
+    <!-- 头部：标题 / 搜索 / 一级导航 -->
+    <view class="menu-head">
+      <view class="page-title">菜单</view>
+      <view class="search">
+        <image class="search__icon" src="/assets/icons/search.svg" mode="aspectFit"></image>
+        <input class="search__input" placeholder="按分类搜索菜品 / 标签" placeholder-class="ph"
+          value="{{keyword}}" bindinput="onSearch" confirm-type="search" />
+      </view>
+      <view class="seg-line">
+        <view class="seg-line__item {{tab === 'mine' ? 'is-on' : ''}}" data-tab="mine" bindtap="onTab">我的菜单</view>
+        <view class="seg-line__item {{tab === 'nearby' ? 'is-on' : ''}}" data-tab="nearby" bindtap="onTab">附近美食</view>
+      </view>
+    </view>
+
+    <!-- 分类 + 列表 -->
+    <view class="menu-body">
+      <scroll-view class="cat-col" scroll-y wx:if="{{!isEmpty}}">
+        <view class="cat-item {{cat === item ? 'is-on' : ''}}" wx:for="{{categories}}" wx:key="*this"
+          data-cat="{{item}}" bindtap="onCat">{{item}}</view>
+      </scroll-view>
+
+      <view class="dish-list {{isEmpty ? 'is-empty' : ''}}"
+        style="{{isEmpty ? 'min-height:' + emptyH + 'px' : ''}}">
+        <view class="dish-row {{g.liftDishRow && item.name === highlightName ? 'g-lift' : ''}}"
+          wx:for="{{list}}" wx:key="id" id="dish-row-{{index}}"
+          data-id="{{item.id}}" bindtap="onOpenDish">
+          <image class="dish-row__img" src="{{item.image}}" mode="aspectFill"></image>
+          <view class="dish-row__info">
+            <view class="dish-row__name">
+              <text>{{item.name}}</text>
+              <text class="dish-row__meta" wx:if="{{tab === 'mine' && item.minutes}}"> ⏱ {{item.minutes}} 分钟</text>
+              <!-- 附近美食：距离未知时照原型显示「待补充」 -->
+              <text class="dish-row__meta" wx:elif="{{tab === 'nearby'}}"> 📍 {{item.distance || '待补充'}}</text>
+            </view>
+            <view class="dish-row__tags" wx:if="{{item.tags.length}}">
+              <text class="chip" wx:for="{{item.tags}}" wx:for-item="t" wx:key="*this">{{t}}</text>
+            </view>
+          </view>
+          <view class="sel-btn {{tab === 'mine' && item.selected ? 'is-on' : ''}}"
+            wx:if="{{tab === 'mine'}}" catchtap="onToggleSelect" data-id="{{item.id}}">
+            {{item.selected ? '✓' : '＋'}}
+          </view>
+          <view class="sel-btn {{item.selected ? 'is-on' : ''}}"
+            wx:elif="{{item.selected}}" catchtap="onToggleSelect" data-id="{{item.id}}">✓</view>
+          <view class="sel-btn" wx:else catchtap="onToggleSelect" data-id="{{item.id}}"><image class="sel-btn__ico" src="/assets/icons/plane.svg" mode="aspectFit"></image></view>
+        </view>
+
+        <!-- 菜单为空（新用户首进 / 全部删光）：＋ + 「添加菜品」，点击跳添加页 -->
+        <view class="menu-empty" wx:if="{{isEmpty}}">
+          <view class="menu-empty__plus" bindtap="onEmptyAdd">＋</view>
+          <view class="menu-empty__txt">{{tab === 'mine' ? '添加菜品' : '添加美食'}}</view>
+          <view class="menu-empty__sub">{{tab === 'mine' ? '把你的拿手菜加进来，之后随机帮你决定' : '记下想去的店，之后随机帮你决定'}}</view>
+        </view>
+
+        <!-- 有菜但搜索 / 分类无匹配 -->
+        <view class="list-empty" wx:elif="{{!list.length}}">没有找到相关菜品</view>
+      </view>
+    </view>
+
+    <view class="pad-bottom"></view>
+  </scroll-view>
+
+  <!-- 悬浮栏（空态时隐藏） -->
+  <view class="float-bar" wx:if="{{!isEmpty}}">
+    <text class="float-bar__text">{{barText}}</text>
+    <view class="float-bar__go {{barCount ? '' : 'is-disabled'}}" bindtap="onGo">{{tab === 'mine' ? '开始吧' : '出发吧'}}</view>
+  </view>
+
+  <!-- ================= 备菜清单弹框（T1 · R30 定稿） ================= -->
+  <view class="prep-mask {{prep.on ? 'is-on' : ''}}" bindtap="onPrepClose" catchtouchmove="noop"></view>
+  <view class="prep {{prep.on ? 'is-on' : ''}}" catchtouchmove="noop">
+    <image class="prep__paper-top" src="/assets/images/ip/prep-note-top.png" mode="widthFix"></image>
+    <view class="prep__paper-mid"></view>
+    <image class="prep__paper-bot" src="/assets/images/ip/prep-note-bottom.png" mode="widthFix"></image>
+
+    <view class="prep__inner">
+      <view class="prep__head">
+        <text class="prep__title">备菜清单</text>
+        <text class="prep__close" catchtap="onPrepClose">收起 ⌄</text>
+      </view>
+
+      <view class="prep__tabs">
+        <view class="prep-tab {{prep.view === 'dish' ? 'is-on' : ''}}" data-v="dish" bindtap="onPrepTab">
+          <view class="prep-tab__k">菜品</view>
+          <view class="prep-tab__v">{{prep.count}}<text class="u">道</text></view>
+        </view>
+        <view class="prep-tab {{prep.view === 'serial' ? 'is-on' : ''}}" data-v="serial" bindtap="onPrepTab">
+          <view class="prep-tab__k">一道一道做</view>
+          <view class="prep-tab__v">{{prep.totalMinutes}}<text class="u">′</text></view>
+        </view>
+        <view class="prep-tab {{prep.view === 'cross' ? 'is-on' : ''}}" data-v="cross" bindtap="onPrepTab">
+          <view class="prep-tab__k">交叉备菜</view>
+          <view class="prep-tab__v">{{prep.stepCount}}<text class="u">步</text></view>
+        </view>
+      </view>
+
+      <scroll-view class="prep__scroll" scroll-y scroll-into-view="{{prep.into}}" scroll-with-animation
+        bindscroll="onPrepScroll">
+        <!-- 食材合计（常驻） -->
+        <view class="prep__blk">
+          <text>食材合计</text>
+          <text class="prep__blk-sub">{{prep.ingredients.length}} 样 · 合并去重</text>
+        </view>
+        <view class="prep__ings">
+          <view class="prep__ing" wx:for="{{prep.ingredients}}" wx:key="name">
+            {{item.name}}<text wx:if="{{item.times > 1}}" class="prep__ing-x">×{{item.times}}</text>
+          </view>
+          <view class="prep__empty" wx:if="{{!prep.ingredients.length}}">还没有食材，去菜品详情补一下～</view>
+        </view>
+
+        <!-- 步骤模块（一道一道做 / 交叉备菜 二选一） -->
+        <view id="prep-anchor-steps"></view>
+        <view class="prep__blk">
+          <text>{{prep.view === 'cross' ? '建议交叉备菜顺序' : '一道一道做'}}</text>
+          <text class="prep__blk-sub">{{prep.view === 'cross' ? '同一时刻可并行' : '按菜品展开 · 依次做完'}}</text>
+        </view>
+
+        <block wx:if="{{prep.view === 'serial'}}">
+          <view class="prep__grp {{item.open ? 'is-open' : ''}}" wx:for="{{prep.serial}}" wx:key="id"
+            data-index="{{index}}" bindtap="onPrepGroup">
+            <view class="prep__grp-hd">
+              <image class="prep__grp-img" src="{{item.image || '/assets/images/dish-placeholder.svg'}}" mode="aspectFill"></image>
+              <view class="prep__grp-info">
+                <view class="prep__grp-nm">{{item.name}}</view>
+                <view class="prep__grp-mt">{{item.minutes}} 分钟 · {{item.steps.length}} 个步骤</view>
+              </view>
+              <view class="prep__chev"></view>
+            </view>
+            <view class="prep__grp-bd" wx:if="{{item.open}}">
+              <view class="prep__step {{s.tag === '炖煮' ? 'is-wait' : ''}}"
+                wx:for="{{item.steps}}" wx:for-item="s" wx:key="index">
+                <view class="prep__step-no">{{index + 1}}</view>
+                <view class="prep__step-tx">{{s.text}}</view>
+                <view class="prep__tag">{{s.tag}}</view>
+              </view>
+              <view class="prep__empty" wx:if="{{!item.steps.length}}">这道菜还没有步骤</view>
+            </view>
+          </view>
+        </block>
+
+        <block wx:elif="{{prep.view === 'cross'}}">
+          <view class="prep__cross-note">按「备料 → 炖煮 → 看火 → 出锅」归并，同一时刻能并行的排在一起</view>
+          <view class="prep__step {{item.wait ? 'is-wait' : ''}}" wx:for="{{prep.cross}}" wx:key="index">
+            <view class="prep__step-tx"><text class="prep__step-dish">{{item.dish}}</text> · {{item.text}}</view>
+            <view class="prep__tag">{{item.tag}}</view>
+          </view>
+          <view class="prep__empty" wx:if="{{!prep.cross.length}}">还没有步骤</view>
+        </block>
+
+        <!-- 本餐菜品（常驻） -->
+        <view id="prep-anchor-dish"></view>
+        <view class="prep__blk">
+          <text>本餐菜品</text>
+          <text class="prep__blk-sub">固定展示 · 不随页签收起</text>
+        </view>
+        <view class="prep__dcard" wx:for="{{prep.serial}}" wx:key="id">
+          <image class="prep__dcard-img" src="{{item.image || '/assets/images/dish-placeholder.svg'}}" mode="aspectFill"></image>
+          <view class="prep__dcard-info">
+            <view class="prep__dcard-nm">{{item.name}}</view>
+            <view class="prep__dcard-mt">⏱ {{item.minutes}} 分钟 · {{item.steps.length}} 个步骤</view>
+            <view class="prep__dcard-ings" wx:if="{{item.ings.length}}">
+              <text wx:for="{{item.ings}}" wx:for-item="ig" wx:key="*this">{{ig}}</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 分享给好友 -->
+        <view class="prep__share" bindtap="onPrepShare">
+          <image class="prep__share-paw" src="/assets/images/ip/share-paw.png" mode="aspectFit"></image>
+          <text>分享给好友</text>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+
+  <!-- ================= 分享长图预览（canvas 生成 → 预览 → 存相册） ================= -->
+  <view class="poster-mask {{poster.on ? 'is-on' : ''}}" catchtouchmove="noop">
+    <view class="poster__bar">
+      <text>长图已生成 · 可发送或保存</text>
+      <text class="poster__close" catchtap="onPosterClose">关闭</text>
+    </view>
+    <image class="poster__img" src="{{poster.path}}" mode="aspectFit"
+      show-menu-by-longpress="{{true}}" bindtap="onPosterPreview"></image>
+    <view class="poster__acts">
+      <view class="poster__btn is-ghost" catchtap="onPosterClose">返回</view>
+      <view class="poster__btn is-primary" catchtap="onPosterSave">保存到相册</view>
+    </view>
+  </view>
+
+  <!-- 长图绘制画布（离屏） -->
+  <canvas type="2d" id="poster-canvas" class="poster-canvas"></canvas>
+
+  <tab-bar active="menu" lift="{{g.liftTab}}"></tab-bar>
+  <template is="guide-layer" data="{{...g}}"></template>
+</view>

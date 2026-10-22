@@ -1,0 +1,116 @@
+/* 我的饮食手札：样式主体在 app.wxss，这里只放本页特有项 */
+
+/* 指标条基础色，与原型一致 */
+.idx-bar__fill { background: linear-gradient(90deg, #F6B57A, #E2622F); }
+
+/* ---------------- 喵条卡（hero 左列，点击进喵屋） ----------------
+   高度实测 ~124rpx：hero 左列（约 344rpx）仍低于右列猫+贴士（约 408rpx），
+   hero 总高不变，下方今日饮食卡不会下移 */
+.pet-strip {
+  margin-top: 26rpx;
+  background: #fff;
+  border: 2rpx solid var(--c-line);
+  border-radius: 24rpx;
+  padding: 18rpx 22rpx 16rpx;
+  box-shadow: 0 14rpx 32rpx -18rpx rgba(69, 48, 31, .2);
+}
+.pet-strip__row { display: flex; align-items: baseline; gap: 12rpx; }
+.pet-strip__lv {
+  font-family: "ZCOOL KuaiLe", "PingFang SC", sans-serif;
+  font-size: 30rpx;
+  color: var(--c-primary);
+}
+.pet-strip__title {
+  font-family: "ZCOOL KuaiLe", "PingFang SC", sans-serif;
+  font-size: 27rpx;
+  color: var(--c-ink);
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.pet-strip__exp { font-size: 22rpx; color: var(--c-ink-2); white-space: nowrap; }
+.pet-strip__bar {
+  margin-top: 12rpx;
+  height: 14rpx;
+  border-radius: 8rpx;
+  background: #F0E2CE;
+  overflow: hidden;
+}
+.pet-strip__fill {
+  height: 100%;
+  border-radius: 8rpx;
+  background: linear-gradient(90deg, #F6B57A, #E2622F);
+  transition: width .5s ease;
+}
+.pet-strip__hint {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 20rpx;
+  color: var(--c-ink-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------------- 左下角喵条测试按钮（仅开发/体验版） ----------------
+   竖排小胶囊：宽 96rpx（左 20 → 右 116rpx），升级提示居中胶囊最窄约 380rpx
+   （左边界 ~185rpx），两者不会压在一起；
+   bottom 180rpx：tab 胶囊底 44 + 高 124 = 顶 168rpx，留 12rpx 缝，不压住「首页」图标 */
+.pet-test {
+  position: absolute;
+  left: 20rpx;
+  bottom: calc(180rpx + env(safe-area-inset-bottom));
+  z-index: 121;
+  width: 96rpx;
+  padding: 10rpx 0 12rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4rpx;
+  background: rgba(255, 255, 255, .96);
+  border: 2rpx dashed rgba(226, 98, 47, .55);
+  border-radius: 24rpx;
+  box-shadow: 0 12rpx 28rpx -16rpx rgba(69, 48, 31, .35);
+}
+.pet-test:active { transform: scale(.94); }
+.pet-test__tag {
+  font-size: 18rpx;
+  line-height: 26rpx;
+  padding: 0 8rpx;
+  border-radius: 6rpx;
+  color: #fff;
+  background: var(--c-primary);
+}
+.pet-test__txt {
+  font-family: "ZCOOL KuaiLe", "PingFang SC", sans-serif;
+  font-size: 20rpx;
+  color: var(--c-primary);
+}
+
+/* ---------------- 升级轻提示（挂在 tab 栏上方） ---------------- */
+.lvup-tip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(150rpx + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  background: #fff;
+  border: 2rpx solid rgba(226, 98, 47, .45);
+  border-radius: 40rpx;
+  padding: 14rpx 28rpx;
+  box-shadow: 0 18rpx 44rpx -16rpx rgba(226, 98, 47, .5);
+  animation: lvup-tip-in .4s cubic-bezier(.3, 1.3, .5, 1);
+}
+@keyframes lvup-tip-in { from { transform: translate(-50%, 30rpx); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
+.lvup-tip__ico { width: 44rpx; height: 42rpx; }
+.lvup-tip__txt {
+  font-family: "ZCOOL KuaiLe", "PingFang SC", sans-serif;
+  font-size: 24rpx;
+  color: var(--c-primary);
+  white-space: nowrap;
+}
+

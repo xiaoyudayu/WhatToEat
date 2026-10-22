@@ -1,0 +1,165 @@
+<import src="/templates/guide.wxml" />
+
+<view class="page-root" bindtap="onPageTap">
+  <view class="status-holder" style="height:{{statusBarHeight}}px"></view>
+
+  <scroll-view class="page-scroll" scroll-y="{{!stepDragging}}">
+    <!-- 顶栏 -->
+    <view class="sub-header">
+      <view class="back-btn" bindtap="onBack">
+        <image class="back-btn__icon" src="/assets/icons/back.svg" mode="aspectFit"></image>
+      </view>
+      <text class="sub-header__title">{{title}}</text>
+    </view>
+
+    <view class="add-body">
+      <!-- 图片 -->
+      <view class="photo-box" id="photo-box" bindtap="onChooseImage">
+        <block wx:if="{{image}}">
+          <image class="photo-box__img" src="{{image}}" mode="aspectFill"></image>
+        </block>
+        <block wx:else>
+          <view class="photo-box__plus">＋</view>
+          <text>点击添加菜品图片</text>
+        </block>
+      </view>
+
+      <!-- 菜名 -->
+      <view class="name-edit">
+        <text class="name-edit__nm {{dishName ? '' : 'is-empty'}}" id="dish-name">{{dishName || '未命名菜品'}}</text>
+        <view class="edit-icon" bindtap="openNameModal">
+          <image class="edit-icon__icon" src="/assets/icons/edit.svg" mode="aspectFit"></image>
+        </view>
+      </view>
+
+      <!-- 标签 -->
+      <view class="sec-title {{g.liftTagZone ? 'g-lift' : ''}}" id="sec-tag">
+        <text>标签</text>
+        <text class="sec-title__hint">长按删除 · 点击重编辑</text>
+        <view class="sec-title__add" data-kind="tag" catchtap="onAddChip">
+          <image class="sec-title__add-img" src="/assets/images/ip/btn-add-paw.png" mode="aspectFit"></image>
+        </view>
+      </view>
+      <view class="ing-chips {{g.liftTagZone ? 'g-lift' : ''}}" id="tag-chips">
+        <block wx:if="{{tags.length}}">
+          <view class="chip {{editingChips === 'tag' ? 'is-shake' : ''}}" wx:for="{{tags}}" wx:key="*this"
+            data-kind="tag" data-index="{{index}}" catchtap="onChipTap" catchlongpress="onChipLongPress">
+            <text>{{item}}</text>
+            <view class="chip__del" wx:if="{{editingChips === 'tag'}}" data-kind="tag" data-index="{{index}}"
+              catchtap="onRemoveChip">✕</view>
+          </view>
+        </block>
+        <text class="chip-empty" wx:else>还没有标签，点右上角 ＋ 自定义添加（长按可删除）</text>
+      </view>
+
+      <!-- 食材 -->
+      <view class="sec-title {{g.liftTagZone ? 'g-lift' : ''}}" id="sec-ing">
+        <text>食材</text>
+        <text class="sec-title__hint">长按删除 · 点击重编辑</text>
+        <view class="sec-title__add" data-kind="ing" catchtap="onAddChip">
+          <image class="sec-title__add-img" src="/assets/images/ip/btn-add-paw.png" mode="aspectFit"></image>
+        </view>
+      </view>
+      <view class="ing-chips {{g.liftTagZone ? 'g-lift' : ''}}" id="ing-chips">
+        <block wx:if="{{ingredients.length}}">
+          <view class="chip {{editingChips === 'ing' ? 'is-shake' : ''}}" wx:for="{{ingredients}}" wx:key="*this"
+            data-kind="ing" data-index="{{index}}" catchtap="onChipTap" catchlongpress="onChipLongPress">
+            <text>{{item}}</text>
+            <view class="chip__del" wx:if="{{editingChips === 'ing'}}" data-kind="ing" data-index="{{index}}"
+              catchtap="onRemoveChip">✕</view>
+          </view>
+        </block>
+        <text class="chip-empty" wx:else>还没有食材，点右上角 ＋ 添加（长按可删除）</text>
+      </view>
+
+      <!-- 自己做：做菜步骤 + 总用时；出去吃：换成「地址与导航」 -->
+      <block wx:if="{{dishType === 'mine'}}">
+        <view class="sec-title">
+          <text>做菜步骤</text>
+          <text class="sec-title__hint">长按整行拖动排序 · 点文字改步骤</text>
+          <view class="sec-title__add" bindtap="onAddStep">
+            <image class="sec-title__add-img" src="/assets/images/ip/btn-add-paw.png" mode="aspectFit"></image>
+          </view>
+        </view>
+        <block wx:if="{{steps.length}}">
+          <view class="step-row {{stepDragIndex === index ? 'is-dragging' : ''}} {{stepDragging && stepDragIndex !== index ? 'is-static' : ''}} {{stepDragging && stepDropIndex === index && stepDragIndex !== index ? 'is-drop' : ''}}"
+            wx:for="{{steps}}" wx:key="key" data-index="{{index}}"
+            style="{{stepDragIndex === index ? 'transform:translateY(' + stepDragY + 'px) scale(1.02)' : ''}}"
+            bindtouchstart="onStepTouchStart" bindlongpress="onStepLongPress"
+            bindtouchmove="onStepTouchMove" bindtouchend="onStepTouchEnd" bindtouchcancel="onStepTouchCancel">
+            <view class="step-row__no">{{index + 1}}</view>
+            <text class="step-row__text" data-index="{{index}}" bindtap="onEditStepText">{{item.text}}</text>
+            <view class="step-row__time" data-index="{{index}}" bindtap="onEditStepMinutes">⏱ {{item.minutes}} 分钟</view>
+            <view class="step-row__del" data-index="{{index}}" catchtap="onRemoveStep">－</view>
+          </view>
+        </block>
+        <view class="chip-empty" style="margin-top:16rpx" wx:else>还没有步骤，点右上角 ＋ 添加</view>
+
+        <view class="step-total">总用时 <text class="step-total__b">{{totalMinutes}} 分钟</text></view>
+      </block>
+
+      <block wx:else>
+        <view class="sec-title">
+          <text>地址与导航</text>
+        </view>
+        <view class="addr-box">
+          <view class="addr-line" bindtap="onPickLocation">
+            <text class="addr-line__pin">📍</text>
+            <text class="addr-line__text {{address ? '' : 'is-empty'}}">{{address || (detail ? dishName + ' · 门店地址待补充' : '点击在地图上选个位置')}}</text>
+            <text class="addr-line__add" catchtap="onEditAddress">手动输入</text>
+          </view>
+          <view class="map-mini" bindtap="onOpenMap">
+            <image class="map-mini__img" src="/assets/images/map.png" mode="aspectFill"></image>
+            <text class="nav-tip">{{latitude ? '🧭 用地图 App 打开' : '🧭 点击在地图上选个点'}}</text>
+          </view>
+        </view>
+      </block>
+    </view>
+
+    <view class="pad-bottom"></view>
+  </scroll-view>
+
+  <!-- 详情态：左下角删除（二次确认 → 从菜单移除 → 回首页） -->
+  <view class="del-dish-btn" wx:if="{{detail}}" id="del-dish" bindtap="onDeleteDish">
+    <image class="del-dish-btn__icon" src="/assets/icons/trash.svg" mode="aspectFit"></image>
+    <text>删除</text>
+  </view>
+
+  <!-- 主按钮：新建 = 去试试吧；详情（二次编辑）= 保存 -->
+  <view class="fab-check {{g.liftFab ? 'g-z614' : ''}} {{g.glowFab ? 'g-glow' : ''}}"
+    id="fab-check" bindtap="onTry">{{detail ? '保存' : '去试试吧'}}</view>
+
+  <!-- 菜名弹窗：手绘便签纸样式 + 画笔光标跟随 -->
+  <block wx:if="{{modalOpen}}">
+    <view class="modal-mask" bindtap="onModalCancel"></view>
+    <view class="name-modal is-note" id="name-modal">
+      <image class="note-bg" src="/assets/images/ip/note-paper.png" mode="scaleToFill"></image>
+      <view class="name-modal__title">{{detail ? '编辑菜名' : '给这道菜起个名字吧'}}</view>
+      <view class="name-modal__field">
+        <input class="name-modal__input" id="nm-input" placeholder="例如：番茄炒蛋" placeholder-class="ph"
+          value="{{nmInput}}" focus="{{nmFocus}}" bindinput="onNameInput" bindconfirm="onModalOk" />
+        <view class="note-pen" style="left:{{penX}}px;top:{{penY}}px">
+          <image class="note-pen__img" src="/assets/images/ip/pencil-t.png" mode="aspectFit"></image>
+        </view>
+      </view>
+      <view class="name-modal__seg">
+        <view class="name-modal__seg-item {{dishType === 'mine' ? 'is-on' : ''}}" data-type="mine" bindtap="onTypeTap">
+          <view class="name-modal__radio"></view><text>自己做</text>
+        </view>
+        <view class="name-modal__seg-item {{dishType === 'nearby' ? 'is-on' : ''}}" data-type="nearby" bindtap="onTypeTap">
+          <view class="name-modal__radio"></view><text>出去吃</text>
+        </view>
+      </view>
+      <view class="name-modal__btns">
+        <view class="name-modal__btn name-modal__btn--cancel" bindtap="onModalCancel">取消</view>
+        <view class="name-modal__btn name-modal__btn--ok" bindtap="onModalOk">确定</view>
+      </view>
+    </view>
+  </block>
+
+  <!-- measureText 用隐藏画布：驱动画笔跟随输入内容 -->
+  <canvas type="2d" id="pen-canvas" style="position:absolute;left:-9999px;top:0;width:120px;height:40px"></canvas>
+
+  <tab-bar active="add" lift="{{g.liftTab}}"></tab-bar>
+  <template is="guide-layer" data="{{...g}}"></template>
+</view>
