@@ -1,0 +1,26 @@
+{
+  "pages": [
+    "pages/home/home",
+    "pages/menu/menu",
+    "pages/add/add",
+    "pages/profile/profile",
+    "pages/pet/pet"
+  ],
+  "window": {
+    "navigationStyle": "custom",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#FAF3E9",
+    "backgroundTextStyle": "light"
+  },
+  "style": "v2",
+  "permission": {
+    "scope.userLocation": {
+      "desc": "用于在地图上标注门店位置，方便你一键导航过去"
+    }
+  },
+  "requiredPrivateInfos": [
+    "chooseLocation"
+  ],
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

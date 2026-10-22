@@ -1,0 +1,130 @@
+<import src="/templates/guide.wxml" />
+
+<view class="page-root" bindtap="onPageTap">
+  <view class="status-holder" style="height:{{statusBarHeight}}px"></view>
+
+  <scroll-view class="page-scroll" scroll-y>
+    <!-- hero：与页面背景溶于一体，右侧 IP 萌宠（按时段换装） -->
+    <view class="profile-hero">
+      <view class="profile-hero__glow" style="background:radial-gradient(circle, {{heroGlow}}, rgba(246,181,122,0) 68%)"></view>
+      <view class="profile-hero__txt">
+        <view class="hero-title">我的饮食<text class="hero-title__accent">手札</text></view>
+        <view class="hero-rule"></view>
+        <view class="hero-date">
+          <text>{{today.date}}</text>
+          <text>{{today.week}}</text>
+          <text class="hero-date__clock">{{today.clock}}</text>
+        </view>
+        <view class="hero-wx">
+          <text class="hero-wx__temp">{{weather.temp}}</text>
+          <view class="hero-wx__col">
+            <view class="hero-wx__r1">{{weather.desc}}</view>
+            <view class="hero-wx__r2">{{weather.extra}}</view>
+          </view>
+        </view>
+        <!-- 喵条卡：填 hero 左列空白（等级摘要 + 进度，点击进喵屋） -->
+        <view class="pet-strip" wx:if="{{pet}}" bindtap="goPet">
+          <view class="pet-strip__row">
+            <text class="pet-strip__lv">Lv.{{pet.lv}}</text>
+            <text class="pet-strip__title">{{pet.title}}</text>
+            <text class="pet-strip__exp">{{pet.exp}} 喵条</text>
+          </view>
+          <view class="pet-strip__bar">
+            <view class="pet-strip__fill" style="width:{{pet.progress}}%"></view>
+          </view>
+          <text class="pet-strip__hint">{{pet.maxed ? '已是传说厨神，继续加油做饭吧' : '再 ' + pet.remain + ' 喵条升 Lv.' + (pet.lv + 1) + ' · 去喵屋看看 ›'}}</text>
+        </view>
+      </view>
+      <view class="hero-pet">
+        <image class="hero-cat" id="hero-cat" src="{{catImg}}" mode="aspectFit"></image>
+        <!-- 每日贴士：猫下方对话气泡 -->
+        <view class="pet-tip {{tipHidden ? 'is-hidden' : ''}}">
+          <text class="pet-tip__tag">{{tipTag}}</text>
+          <text>{{tipText}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 时段首访小看板：吊在猫下方，点小猫爪 / 板外任意处收起 -->
+    <view class="tip-board {{boardAnim}}" wx:if="{{boardVisible}}" style="left:{{boardLeftPx}}px;{{boardTopPx ? 'top:' + boardTopPx + 'px' : ''}}" catchtap="noop">
+      <view class="tb-swing">
+        <image class="tip-board__paper" src="/assets/images/ip/menu-note-clip.png" mode="scaleToFill"></image>
+        <view class="tip-board__txt">{{boardText}}</view>
+        <view class="tip-board__paw" catchtap="onBoardPawTap"></view>
+        <view class="tip-board__hint" style="opacity:{{hintOpacity}}">
+          <view>点点小猫爪</view>
+          <view>收起看板</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 今日饮食 -->
+    <view class="card {{g.liftDietCard ? 'g-lift' : ''}}" id="diet-card">
+      <view class="card__title">今日饮食<text class="card__hint">今日 {{totalCount}} 条记录</text></view>
+
+      <view class="slot-tabs" id="slot-tabs">
+        <view class="slot-tabs__item {{curSlot === index ? 'is-on' : ''}}"
+          wx:for="{{slots}}" wx:key="name" data-index="{{index}}" bindtap="onSlotTap">
+          <text>{{item.name}}</text>
+          <view class="slot-tabs__dot" wx:if="{{item.count}}"></view>
+        </view>
+      </view>
+
+      <scroll-view class="diet-scroll" id="diet-body" scroll-y scroll-with-animation
+        scroll-into-view="{{'slot-sec-' + curSlot}}">
+        <view class="slot-sec {{curSlot === index ? 'is-focus' : ''}}" wx:for="{{slots}}" wx:key="name"
+          id="slot-sec-{{index}}">
+          <view class="slot-sec__head">{{item.name}}</view>
+
+          <view class="dish-cards" wx:if="{{item.items.length}}">
+            <view class="dish-card" wx:for="{{item.items}}" wx:for-item="rec" wx:key="rid">
+              <image class="dish-card__thumb" src="{{rec.image}}" mode="aspectFill"></image>
+              <view class="dish-card__x" data-rid="{{rec.rid}}" data-name="{{rec.name}}" catchtap="onRemoveRecord">✕</view>
+              <view class="dish-card__name">{{rec.name}}</view>
+            </view>
+
+            <view class="dish-card dish-card--add" bindtap="onDrawAgain">
+              <view class="add-tile"><image class="add-tile__img" src="/assets/images/ip/btn-add-day.png" mode="aspectFit"></image></view>
+              <view class="dish-card__name">再随机一个</view>
+            </view>
+          </view>
+
+          <view class="empty-banner" wx:elif="{{item.plus}}" bindtap="onDrawAgain">
+            <image class="e-plus" src="/assets/images/ip/btn-add-paw.png" mode="aspectFit"></image>
+            <text class="empty-banner__txt">{{item.empty}}</text>
+          </view>
+
+          <view class="slot-empty" wx:else>{{item.empty}}</view>
+        </view>
+      </scroll-view>
+    </view>
+
+    <!-- 今日饮食构成：按标签粗略统计（不宣称营养 / 功效结论） -->
+    <view class="card">
+      <view class="card__title">今日饮食构成<text class="card__hint">按标签粗略统计，仅作记录</text></view>
+      <view class="idx-grid">
+        <view class="idx-cell" wx:for="{{stats}}" wx:key="label">
+          <view class="idx-cell__top">{{item.label}}</view>
+          <view class="idx-bar"><view class="idx-bar__fill" style="width:{{item.percent}}%"></view></view>
+        </view>
+      </view>
+    </view>
+
+    <view class="pad-bottom"></view>
+  </scroll-view>
+
+  <!-- 升级轻提示：记录后落在本页时挂出，点击才进喵屋（不自动切页） -->
+  <view class="lvup-tip" wx:if="{{levelUpTip}}" bindtap="goPet">
+    <image class="lvup-tip__ico" src="/assets/images/pet/medal.png" mode="aspectFit"></image>
+    <text class="lvup-tip__txt">升到 Lv.{{levelUpTip.lv}} {{levelUpTip.title}} · 去看看</text>
+  </view>
+
+  <!-- 左下角喵条测试按钮：只有开发/体验版显示，正式版不渲染 -->
+  <view class="pet-test" wx:if="{{showTest && pet}}" catchtap="onTestPet">
+    <text class="pet-test__tag">测试</text>
+    <text class="pet-test__txt">喵条+</text>
+  </view>
+
+  <tab-bar active="profile" lift="{{g.liftTab}}"></tab-bar>
+  <template is="guide-layer" data="{{...g}}"></template>
+</view>

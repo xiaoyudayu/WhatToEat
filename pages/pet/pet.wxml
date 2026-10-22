@@ -1,0 +1,112 @@
+<view class="page-root pet-page">
+  <view class="status-holder" style="height:{{statusBarHeight}}px"></view>
+
+  <!-- 顶栏：返回 + 标题（右上角不再显示喵条值——与摘要卡进度条重复且遮挡猫架） -->
+  <view class="pet-nav">
+    <view class="pet-nav__back" bindtap="onBack">
+      <view class="pet-nav__arrow"></view>
+    </view>
+    <text class="pet-nav__title">喵屋</text>
+    <view class="pet-nav__spacer"></view>
+  </view>
+
+  <!-- 当前等级摘要卡 -->
+  <view class="pet-head">
+    <view class="pet-head__badge">
+      <image class="pet-head__badge-img" src="{{badge}}" mode="aspectFit"></image>
+      <text class="pet-head__lv">{{s.lv}}</text>
+    </view>
+    <view class="pet-head__col">
+      <view class="pet-head__row1">
+        <text class="pet-head__title">{{s.title}}</text>
+        <text class="pet-head__exp">{{s.exp}} 喵条</text>
+      </view>
+      <view class="pet-head__bar">
+        <view class="pet-head__fill" style="width:{{s.progress}}%"></view>
+      </view>
+      <text class="pet-head__hint">{{s.maxed ? '已经是最厉害的厨神啦' : '再 ' + s.remain + ' 喵条升 Lv.' + (s.lv + 1) + ' ' + s.nextTitle}}</text>
+    </view>
+  </view>
+
+  <!-- 猫架：Lv1 地面 → Lv2/4/6 吊床 · Lv3/5 木板 → Lv7 顶窝（坐标见 pet.js STOPS） -->
+  <scroll-view class="pet-tree" scroll-y scroll-top="{{scrollTop}}" scroll-with-animation="{{scrollAnim}}">
+    <view class="tree" style="height:{{treeH}}px">
+      <!-- 细立柱 + 地面 -->
+      <view class="tree__post" style="{{postStyle}}"></view>
+      <view class="tree__ground" style="{{groundStyle}}"></view>
+
+      <block wx:for="{{stops}}" wx:key="lv">
+        <!-- 横枝（木板下）/ 横梁（吊床上） -->
+        <view wx:if="{{item.branchStyle}}" class="tree__branch" style="{{item.branchStyle}}"></view>
+        <!-- 平台：木板 / 吊床 / 顶窝 -->
+        <image wx:if="{{item.img}}" class="tree__plat tree__plat--{{item.type}} tree__plat--{{item.state}}"
+          src="{{item.img}}" mode="aspectFit" style="{{item.platStyle}}"></image>
+        <!-- 层名牌：平台对侧 -->
+        <view class="tree__plate tree__plate--{{item.state}}" style="{{item.plateStyle}}">
+          <text class="tree__lv">{{item.lvText}}</text>
+          <text class="tree__title">{{item.title}}</text>
+          <text class="tree__note">{{item.note}}</text>
+        </view>
+      </block>
+
+      <!-- 挂饰：随等级逐级解锁（Lv2~Lv6 每级一件），全部挂在支架上：
+           毛球带挂绳压横枝、铃铛横钉钉柱侧；新解锁 pop 入场 + 常态轻摆 -->
+      <block wx:for="{{decor}}" wx:key="key">
+        <view wx:if="{{item.show && item.type === 'yarn'}}"
+          class="deco deco-yarn {{item.sway ? 'deco-sway' : ''}} {{item.fresh ? 'deco-new' : ''}}"
+          style="{{item.style}}">
+          <view class="deco-yarn__string"></view>
+          <image class="deco-yarn__ball" src="{{item.src}}" mode="aspectFit"></image>
+        </view>
+        <view wx:elif="{{item.show && item.type === 'bell'}}"
+          class="deco deco-bell {{item.sway ? 'deco-sway' : ''}} {{item.fresh ? 'deco-new' : ''}}"
+          style="{{item.style}}">
+          <view class="deco-bell__peg"></view>
+          <view class="deco-bell__string"></view>
+          <view class="deco-bell__ball"></view>
+        </view>
+      </block>
+
+      <!-- 小猫：外层直线位移，中层翻面，内层弧线/倾角/摆动；点它有互动 -->
+      <view class="cat-pos {{fromPrev ? 'is-from-prev' : ''}} {{jumping ? 'is-jumping' : ''}} {{catTap ? 'is-tapped' : ''}}"
+        style="{{catStyle}}" catchtap="onCatTap">
+        <view class="cat-dust cat-dust--a"></view>
+        <view class="cat-dust cat-dust--b"></view>
+        <view wx:if="{{catBubble}}" class="cat-bubble {{catDir === 'left' ? 'cat-bubble--left' : ''}}">{{catBubble}}</view>
+        <block wx:if="{{catTap}}">
+          <text class="cat-heart cat-heart--a">♥</text>
+          <text class="cat-heart cat-heart--b">♥</text>
+        </block>
+        <view class="cat-face cat-face--{{catDir}}">
+          <view class="cat-hop cat-hop--{{catHopDir}}">
+            <image class="cat-img {{catTilt && !jumping ? 'cat-img--tilt' : ''}}"
+              src="/assets/images/pet/jump.png" mode="aspectFit"></image>
+          </view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 规则说明（审核口径：只讲怎么攒，不设任务/排行/兑换） -->
+  <view class="pet-rules">
+    <text class="pet-rules__line">每记一顿「自己做」 +{{s.gainPerMeal}} 喵条 · 每天最多 +{{s.dailyCap}}</text>
+    <text class="pet-rules__line pet-rules__sub">已下厨 {{s.totalMeals}} 顿 · 删除记录不会扣喵条</text>
+    <text class="pet-rules__line pet-rules__sub">点点小猫，它会回应你</text>
+  </view>
+
+  <!-- 升级弹层 -->
+  <view class="lvup" wx:if="{{levelUp}}" bindtap="onLevelUpClose">
+    <view class="lvup__card">
+      <view class="lvup__medal-wrap">
+        <image class="lvup__medal" src="{{levelUp.medal}}" mode="aspectFit"></image>
+        <text class="lvup__medal-lv">{{levelUp.toLv}}</text>
+      </view>
+      <view class="lvup__tag">LEVEL UP!</view>
+      <view class="lvup__cat-wrap">
+        <image class="lvup__cat" src="{{levelUp.image}}" mode="aspectFit"></image>
+      </view>
+      <view class="lvup__title">升到 Lv.{{levelUp.toLv}} · {{levelUp.title}}</view>
+      <view class="lvup__btn" catchtap="onLevelUpClose">继续加油</view>
+    </view>
+  </view>
+</view>

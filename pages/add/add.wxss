@@ -1,0 +1,4 @@
+/* 添加页：样式主体在 app.wxss，这里只放本页特有项 */
+
+/* 菜名弹窗输入框 placeholder */
+.ph { color: #BBA896; }

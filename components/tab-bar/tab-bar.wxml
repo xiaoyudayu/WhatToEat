@@ -1,0 +1,28 @@
+<!-- 底部导航：四等分，中间为突起添加钮；IP 萌宠风格透明水彩图标 -->
+<!-- 底部渐变过渡：内容滚到导航下方时渐隐（首页不启用） -->
+<view class="tab-fade" wx:if="{{active !== 'home'}}"></view>
+<view class="tabbar">
+  <view class="tab {{active === 'home' ? 'is-active' : ''}} {{lift === 'home' ? 'g-lift' : ''}}"
+    id="tab-home" data-url="/pages/home/home" bindtap="onTap">
+    <image class="tab__icon" mode="aspectFit" src="/assets/images/ip/tab-home-t.png"></image>
+    <text class="tab__label">首页</text>
+  </view>
+
+  <view class="tab {{active === 'menu' ? 'is-active' : ''}} {{lift === 'menu' ? 'g-lift' : ''}}"
+    id="tab-menu" data-url="/pages/menu/menu" bindtap="onTap">
+    <image class="tab__icon" mode="aspectFit" src="/assets/images/ip/tab-menu-t.png"></image>
+    <text class="tab__label">菜单</text>
+  </view>
+
+  <view class="tab tab--add {{lift === 'add' ? 'g-lift' : ''}}"
+    id="tab-add" data-url="/pages/add/add" bindtap="onTap">
+    <view class="tab__fab"><view class="tab__plus"></view></view>
+    <text class="tab__label">添加</text>
+  </view>
+
+  <view class="tab {{active === 'profile' ? 'is-active' : ''}} {{lift === 'mine' ? 'g-lift' : ''}}"
+    id="tab-mine" data-url="/pages/profile/profile" bindtap="onTap">
+    <image class="tab__icon" mode="aspectFit" src="/assets/images/ip/tab-profile-t.png"></image>
+    <text class="tab__label">我的</text>
+  </view>
+</view>
